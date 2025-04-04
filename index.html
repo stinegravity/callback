@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Ghana Card for Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased flex justify-center items-center min-h-screen">
+
+    <!-- Form Container -->
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+        <h1 class="text-2xl font-semibold text-center text-gray-700 mb-6">Upload Ghana Card for Verification</h1>
+        
+        <!-- Form -->
+        <form id="file-upload-form" action="http://localhost:5000/upload" method="POST" enctype="multipart/form-data" class="space-y-6">
+            
+            <!-- Name Input -->
+            <div class="flex flex-col">
+                <label for="name" class="text-lg font-medium text-gray-700 mb-2">Your Name:</label>
+                <input type="text" name="name" id="name" required class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+            </div>
+
+            <!-- Phone Number Input -->
+            <div class="flex flex-col">
+                <label for="number" class="text-lg font-medium text-gray-700 mb-2">Your Phone Number:</label>
+                <input type="tel" name="number" id="number" required class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+            </div>
+            
+            <!-- File Input -->
+            <div class="flex flex-col">
+                <label for="file" class="text-lg font-medium text-gray-700 mb-2">Select a file to upload:</label>
+                <input type="file" name="file" id="file" accept="image/jpeg, image/png, application/pdf" required class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">
+                Upload
+            </button>
+        </form>
+
+        <!-- Response Message -->
+        <div id="response-message" class="mt-4 text-center"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('file-upload-form');
+        const responseMessage = document.getElementById('response-message');
+        
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('http://localhost:5000/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    responseMessage.innerHTML = `<p class="text-green-600 font-medium">Success! File uploaded and verified successfully.</p><pre class="text-gray-800">${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    responseMessage.innerHTML = `<p class="text-red-600 font-medium">Failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                responseMessage.innerHTML = `<p class="text-red-600 font-medium">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
