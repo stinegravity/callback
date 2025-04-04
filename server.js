@@ -7,9 +7,22 @@ const fs = require("fs");
 const axios = require("axios");
 const mongoose = require("mongoose");
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const app = express(); // Add this line to initialize the app
 
+// Serve static files from the 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve the index.html file when visiting the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const port = process.env.PORT || 5000;  // This allows for dynamic port usage
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+// CORS Middleware
 app.use(cors());
 
 // MongoDB connection
@@ -119,6 +132,3 @@ app.post("/callback/verification", async (req, res) => {
     console.log("🔄 Received callback verification request:", req.body);
     return res.status(200).json({ success: true, message: "Verification callback received!" });
 });
-
-// Start server
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
