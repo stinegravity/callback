@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");  
+const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -75,6 +75,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
         console.log("✅ Verification API Response:", response.data);
 
         if (response.data.success === "true") {
+            // Define the Verification model here
             const Verification = mongoose.model("Verification", new mongoose.Schema({
                 transactionGuid: String,
                 shortGuid: String,
@@ -94,7 +95,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
             return res.json({
                 success: true,
                 message: "File uploaded and verified successfully",
-                verificationData: response.data.data 
+                verificationData: response.data.data
             });
         } else {
             return res.status(400).json({
@@ -128,7 +129,39 @@ app.use((err, req, res, next) => {
     next();
 });
 
+// Verification callback route
 app.post("/callback/verification", async (req, res) => {
     console.log("🔄 Received callback verification request:", req.body);
-    return res.status(200).json({ success: true, message: "Verification callback received!" });
+    const { transactionGuid, shortGuid, verified, person } = req.body;
+
+    if (!transactionGuid || !shortGuid || !person) {
+        return res.status(400).json({ success: false, message: "Incomplete verification data" });
+    }
+
+    // Define the Verification model here as well
+    const Verification = mongoose.model('Verification', new mongoose.Schema({
+        transactionGuid: String,
+        shortGuid: String,
+        verified: Boolean,
+        person: Object
+    }));
+
+    const verification = new Verification({
+        transactionGuid,
+        shortGuid,
+        verified: verified === "TRUE",
+        person
+    });
+
+    try {
+        await verification.save();
+        return res.status(200).json({ success: true, message: "Verification saved successfully" });
+    } catch (err) {
+        console.error("❌ Error saving verification:", err);
+        return res.status(500).json({ success: false, message: "Error saving verification" });
+    }
 });
+
+// Express can parse JSON/Form Body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
